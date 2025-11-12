@@ -1,0 +1,19 @@
+{
+    "name": "kszts/calendar_plugin",
+    "type": "plugin",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Kszkl\\Calendar\\": "./src"
+        }
+    },
+    "authors": [
+        {
+            "name": "Krzysztof Szklarski, Tomasz Sykuła"
+        }
+    ],
+    "config" : {
+        "vendor-dir": "libs"
+    },
+    "require": {}
+}
