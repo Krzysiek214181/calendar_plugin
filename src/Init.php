@@ -10,6 +10,7 @@ class Init
      */
     public static function getServices(){
         return [
+            Admin\AdminLinks::class,
             Admin\AdminPages::class,
             Base\EventCreationHandler::class,
         ];

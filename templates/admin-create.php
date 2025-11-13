@@ -46,8 +46,7 @@
 
       <tr>
         <th><label for="start_time">Data Rozpoczęcia *</label></th>
-        <td><input type="date" id="start_date" name="start_date" required>
-        <input type="time" name="start_time" id="start_time" required></td>
+        <td><input type="date" id="start_date" name="start_date" required><input type="time" name="start_time" id="start_time" required></td>
       </tr>
 
       <tr>
@@ -89,6 +88,7 @@
   </form>
 </div>
 <script>
+const startTime = document.getElementById("start_time");
 const endTimeRow = document.getElementById("end_time_row");
 const endDate = document.getElementById("end_date");
 const endTime = document.getElementById("end_time");
@@ -98,10 +98,12 @@ function toggleEndTime() {
 
   if (wholeDay === "1") {
     endTimeRow.style.display = "none";
+    startTime.style.display = "none";
     endTime.required = false;
     endDate.required = false;
 } else {
     endTimeRow.style.display = "table-row";
+    startTime.style.display = "inline";
     endTime.required = true;
     endDate.required = true;
   }

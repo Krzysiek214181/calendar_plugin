@@ -37,16 +37,14 @@ class EventGenerator
             $last_instance = $this->DbService->get_last_instance_of_event($event->id);
             if($last_instance){
                 $last_instance_start_time = new DateTime($last_instance);
-                $start_time = $last_instance_start_time->modify($recurrence_interval);
+                $next_instance_start_time = $last_instance_start_time->modify($recurrence_interval);
             }else{
-                $start_time = new DateTime($event->start_time);
+                $next_instance_start_time = new DateTime($event->start_time);
             }
-
-            $next_instance_start_time = $start_time;
 
             //while not exceeding the generation_window or the recurrence_window create instance and move the next_instance_start_time by the recurrence_interval
             while($next_instance_start_time < $generation_window || ($event->recurrence_end && $next_instance_start_time < $event->recurrence_end) ){
-                // create instance
+                //
                 $next_instance_start_time->modify($recurrence_interval);
             }
         }

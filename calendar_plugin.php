@@ -4,8 +4,9 @@
 Plugin Name: Calendar Plugin
 Plugin Uri: https://github.com/Krzysiek214181/calendar_plugin
 Description:
+Version: 1.0
 Author: Krzysztof Szklarski, Tomasz Sykuła
-Author Uri: www.github.com/vkiuu
+Author Uri: https://github.com/Krzysiek214181
 Licence: GPLv2 or later
 */
 
