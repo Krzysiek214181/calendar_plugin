@@ -99,11 +99,13 @@ function toggleEndTime() {
   if (wholeDay === "1") {
     endTimeRow.style.display = "none";
     startTime.style.display = "none";
+    startTime.required = false;
     endTime.required = false;
     endDate.required = false;
 } else {
     endTimeRow.style.display = "table-row";
     startTime.style.display = "inline";
+    startTime.required = true;
     endTime.required = true;
     endDate.required = true;
   }

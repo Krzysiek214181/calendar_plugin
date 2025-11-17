@@ -80,7 +80,7 @@ class DbService
      *      reccurence_type: 'none'|'daily'|'weekly'|'biweekly'|'monthly'|'yearly',
      *      recurrence_end: string
      *  } $args
-     * @return bool
+     * @return int|false returns the id of the inserted event or false if failed
      */
     public function create_new_event(array $args){
 
@@ -90,7 +90,10 @@ class DbService
         }
         
         $result = $this->db->insert($this->table, $args);
-        return $result !== false;
+        if($result !== false){
+            $insert_id = $this->db->insert_id;
+        }
+        return $insert_id ?: false;
     }
 
     /**
@@ -108,7 +111,7 @@ class DbService
         $formatted_start_time = $args['start_time']->format('Y-m-d H:i:s');
         $formatted_end_time = $args['end_time']->format('Y-m-d H:i:s');
         
-        if($args['type'] === "blocking"){
+        if($args['event_type'] === "blocking"){
             $this->block_all_overlapping_instances($formatted_start_time, $formatted_end_time);
             $is_blocked = 0;
         }else{
@@ -130,7 +133,7 @@ class DbService
      * @return bool
      */
     private function check_if_blocked($instance_start_time, $instance_end_time){
-        $sql = $this->db->prepare("SELECT i.id FROM {$this->instances_table} i JOIN {$this->table} e ON i.event_id = e.id WHERE type='blocking' AND  ( (i.start_time <= %s AND %s < i.end_time) OR (i.start_time < %s AND %s <= i.end_time) OR (i.start_time >= %s AND i.end_time <= %s.));", $instance_start_time, $instance_start_time, $instance_end_time, $instance_end_time, $instance_start_time, $instance_end_time);
+        $sql = $this->db->prepare("SELECT i.id FROM {$this->instances_table} i JOIN {$this->table} e ON i.event_id = e.id WHERE type='blocking' AND  ( (i.start_time <= %s AND %s < i.end_time) OR (i.start_time < %s AND %s <= i.end_time) OR (i.start_time >= %s AND i.end_time <= %s));", $instance_start_time, $instance_start_time, $instance_end_time, $instance_end_time, $instance_start_time, $instance_end_time);
         $result = $this->db->get_var($sql);
         return $result ? True: False;
     }
@@ -140,7 +143,7 @@ class DbService
      * @return bool
      */
     private function block_all_overlapping_instances($instance_start_time, $instance_end_time){
-        $sql = $this->db->prepare("UPDATE {$this->instances_table} SET is_blocked = 1 WHERE id IN ( SELECT i.id FROM {$this->instances_table} i JOIN {$this->table} e ON i.event_id = e.id WHERE type='lesson' AND  ( (i.start_time >= %s AND i.start_time < %s) OR (i.end_time > %s AND i.end_time <= %s) OR (%s >= i.start_time AND %s <= i.end_time));", $instance_start_time, $instance_end_time, $instance_start_time, $instance_end_time, $instance_start_time, $instance_end_time);
+        $sql = $this->db->prepare("UPDATE {$this->instances_table} SET is_blocked = 1 WHERE id IN (SELECT id FROM ( SELECT i.id FROM {$this->instances_table} i JOIN {$this->table} e ON i.event_id = e.id WHERE type='lesson' AND ((i.start_time >= %s AND i.start_time < %s) OR (i.end_time > %s AND i.end_time <= %s) OR (%s >= i.start_time AND %s <= i.end_time))) AS subquery);", $instance_start_time, $instance_end_time, $instance_start_time, $instance_end_time, $instance_start_time, $instance_end_time);
         $result = $this->db->query($sql);
         return !($result === 'false');
     }
@@ -150,20 +153,20 @@ class DbService
      * @return object[] array of objects containing (id, type, event_name, teacher, class, room, start_time, whole_day, end_time, recurrence_type, recurrence_end)
      */
     public function get_all_recurring_events(){
-        $rows = $this->db->get_results("SELECT id, type, event_name, teacher, class, room, start_time, whole_day, end_time, recurrence_type, recurrence_end FROM {$this->table} WHERE recurrence_type != none AND (recurrence_end > NOW() OR recurrence_end IS NULL);");
+        $rows = $this->db->get_results("SELECT id, type, event_name, teacher, class, room, start_time, whole_day, end_time, recurrence_type, recurrence_end FROM {$this->table} WHERE recurrence_type != 'none' AND (recurrence_end > NOW() OR recurrence_end = '0000-00-00 00:00:00');");
         return $rows;
     }
 
 
     /**
-     * Returns the start_time of the last instance of the given event_id
+     * Returns the start_time and end_time of the last instance of the given event_id
      * @param integer $event_id
-     * @return string|null
+     * @return object|null
      */
     public function get_last_instance_of_event($event_id){
-        $sql = $this->db->prepare("SELECT start_time FROM {$this->instances_table} WHERE event_id = %n ORDER BY id DESC LIMIT 1;", $event_id);
-        $start_time = $this->db->get_var($sql);
-        return $start_time;
+        $sql = $this->db->prepare("SELECT start_time, end_time FROM {$this->instances_table} WHERE event_id = %d ORDER BY id DESC LIMIT 1;", $event_id);
+        $times = $this->db->get_row($sql);
+        return $times;
     }
 
     /**

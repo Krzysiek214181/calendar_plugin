@@ -24,28 +24,47 @@ class EventGenerator
     
     /**
      * generate events for the following month
+     * @param array[object] $events_override_list generates only for events passed in by the user, instead of all recurring events
      * @return void
      */
-    public function generate_events(){
-        $events = $this->DbService->get_all_recurring_events();
+    public function generate_events(?array $events_override_list = null){
+        $events = $events_override_list ?: $this->DbService->get_all_recurring_events();
         $generation_window = new DateTime("now");
         $generation_window->modify("+1 month");
         
         foreach($events as $event){
+            $is_reccuring = ($event->recurrence_type !== 'none');
+            if($is_reccuring){
             $recurrence_interval = $this->rec_type_to_time_mod($event->recurrence_type);
-            // find the event start time (either last instance's start_time + reccurence type or start_time from scheme event table)
+            }
+            // find the instance start/end time (either last instance's start/end_time + reccurence type or start/end_time from scheme event table)
             $last_instance = $this->DbService->get_last_instance_of_event($event->id);
             if($last_instance){
-                $last_instance_start_time = new DateTime($last_instance);
+                $last_instance_start_time = new DateTime($last_instance->start_time);
+                $last_instance_end_time = new DateTime( $last_instance->end_time);
                 $next_instance_start_time = $last_instance_start_time->modify($recurrence_interval);
+                $next_instance_end_time = $last_instance_end_time->modify($recurrence_interval);
             }else{
                 $next_instance_start_time = new DateTime($event->start_time);
+                $next_instance_end_time = new DateTime($event->end_time);
             }
 
-            //while not exceeding the generation_window or the recurrence_window create instance and move the next_instance_start_time by the recurrence_interval
+            // while not exceeding the generation_window or the recurrence_window create instance and move the next_instance_start_time by the recurrence_interval
             while($next_instance_start_time < $generation_window || ($event->recurrence_end && $next_instance_start_time < $event->recurrence_end) ){
-                //
-                $next_instance_start_time->modify($recurrence_interval);
+                $this->DbService->create_new_event_instance(
+                [
+                    "event_id"=>$event->id,
+                    "event_type"=>$event->type,
+                    "start_time"=>$next_instance_start_time,
+                    "end_time"=>$next_instance_end_time
+                ]);
+
+                if($is_reccuring){
+                    $next_instance_start_time->modify($recurrence_interval);
+                    $next_instance_end_time->modify($recurrence_interval);
+                }else{
+                    break;
+                }
             }
         }
     }

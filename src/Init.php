@@ -13,6 +13,7 @@ class Init
             Admin\AdminLinks::class,
             Admin\AdminPages::class,
             Base\EventCreationHandler::class,
+            Base\EventGenerator::class,
         ];
     }
 
