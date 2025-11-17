@@ -14,6 +14,7 @@ class Init
             Admin\AdminPages::class,
             Base\EventCreationHandler::class,
             Base\EventGenerator::class,
+            Base\EventRestApi::class
         ];
     }
 

@@ -66,6 +66,8 @@ class EventGenerator
                     break;
                 }
             }
+
+            do_action('kszts_calendar_instances_updated');
         }
     }
 

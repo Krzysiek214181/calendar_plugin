@@ -40,7 +40,7 @@ class EventCreationHandler
             'event_name' => sanitize_text_field($_POST['event_name']),
             'teacher' => sanitize_text_field($_POST['teacher']),
             'class' => sanitize_text_field($_POST['class']),
-            'room' => intval($_POST['room']),
+            'room' => sanitize_text_field($_POST['room']),
             'start_time' => sanitize_text_field($_POST['start_date']) . " " . sanitize_text_field($start_time),
             'whole_day' =>boolval($_POST['whole_day']),
             'end_time' => sanitize_text_field($_POST['end_date']) . ' ' . sanitize_text_field($end_time),

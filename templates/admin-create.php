@@ -37,7 +37,7 @@
 
       <tr>
         <th><label for="room">Sala</label></th>
-        <td><input type="number" id="room" name="room" placeholder="124"></td>
+        <td><input type="text" id="room" maxlength="25" name="room" placeholder="124"></td>
       </tr>
       <tr>
         <th><label for="class">Klasa</label></th>

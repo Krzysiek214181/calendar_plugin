@@ -34,7 +34,7 @@ class DbService
         event_name VARCHAR(255) NOT NULL,
         teacher VARCHAR(255),
         class VARCHAR(4),
-        room INT(3),
+        room VARCHAR(25) DEFAULT NULL,
         start_time DATETIME NOT NULL,
         whole_day BOOLEAN NOT NULL,
         end_time DATETIME,
@@ -156,7 +156,15 @@ class DbService
         $rows = $this->db->get_results("SELECT id, type, event_name, teacher, class, room, start_time, whole_day, end_time, recurrence_type, recurrence_end FROM {$this->table} WHERE recurrence_type != 'none' AND (recurrence_end > NOW() OR recurrence_end = '0000-00-00 00:00:00');");
         return $rows;
     }
-
+    
+    /**
+     * Returns all events_instances joined with their event_name, ?teacher, ?class, ?room
+     * @return object[]
+     */
+    public function get_all_formatted_instances(){
+        $rows = $this->db->get_results("SELECT i.start_time, i.end_time, i.is_blocked, e.event_name, e.teacher, e.room, e.class FROM {$this->instances_table} i JOIN {$this->table} e ON i.event_id = e.id;");
+        return $rows;
+    }
 
     /**
      * Returns the start_time and end_time of the last instance of the given event_id
